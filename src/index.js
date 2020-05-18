@@ -12,13 +12,14 @@ class NotarizeCliCommand extends Command {
   async run() {
     // eslint-disable-next-line no-shadow
     const { flags } = this.parse(NotarizeCliCommand);
-
+    process.stdout.write('Uploading file... ');
     const requestUuid = await notarizeApp(
       flags.file,
       flags['bundle-id'],
       flags.username,
       flags.password,
     ).catch(() => undefined);
+    console.log('done');
     if (!requestUuid) {
       console.error('Error: could not upload file for notarization');
     } else {
