@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "oclif",
+    "airbnb-base",
+    "plugin:node/recommended",
+    "plugin:promise/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "plugins": ["import"],
+  "rules": {
+    "no-console": 0,
+    "no-await-in-loop": 0
+  }
+}
