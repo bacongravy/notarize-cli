@@ -48,7 +48,7 @@ Some options may be passed as environment variables.
 
 Installation is unnecessary when you run the command using `npx`, but you can install it if you wish:
 
-```sh-session
+```sh
 npm install -g notarize-cli
 ```
 
