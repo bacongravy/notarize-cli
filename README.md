@@ -10,7 +10,7 @@ Supports notarizing app packages, disk images, and zip files.
 
 ## Example
 
-```sh-session
+```sh
 npx notarize-cli --file build/$PRODUCT_MODULE_NAME.dmg \
                  --bundle-id $PRODUCT_BUNDLE_IDENTIFIER \
                  --username $NOTARIZE_USERNAME \
