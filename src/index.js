@@ -18,6 +18,7 @@ class NotarizeCliCommand extends Command {
       flags['bundle-id'],
       flags.username,
       flags.password,
+      flags['asc-provider']
     ).catch(() => undefined);
     console.log('done');
     if (!requestUuid) {
@@ -65,6 +66,11 @@ NotarizeCliCommand.flags = {
     description: 'bundle id of the app to notarize',
     required: true,
     env: 'PRODUCT_BUNDLE_IDENTIFIER',
+  }),
+  'asc-provider': flags.string({
+    description: 'asc provider to use for app notarization',
+    required: false,
+    default: "",
   }),
   username: flags.string({
     description: 'username to use for authentication',

@@ -28,28 +28,55 @@ const getRequestStatus = async (requestUuid, username, password) => {
   return info ? info.Status : 'unknown';
 };
 
-const notarizeApp = async (file, bundleId, username, password) => {
-  const { stdout } = await execa('xcrun', [
-    'altool',
-    '--notarize-app',
-    '--file',
-    file,
-    '--primary-bundle-id',
-    bundleId,
-    '--username',
-    username,
-    '--password',
-    password,
-    '--output-format',
-    'json',
-  ]);
-  let requestUuid;
-  try {
-    requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
-  } catch (error) {
-    console.error(stdout);
+const notarizeApp = async (file, bundleId, username, password, provider) => {
+  if(provider == "") {
+    const { stdout } = await execa('xcrun', [
+      'altool',
+      '--notarize-app',
+      '--file',
+      file,
+      '--primary-bundle-id',
+      bundleId,
+      '--username',
+      username,
+      '--password',
+      password,
+      '--output-format',
+      'json',
+    ]);
+    let requestUuid;
+    try {
+      requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
+    } catch (error) {
+      console.error(stdout);
+    }
+    return requestUuid;
   }
-  return requestUuid;
+  else {
+    const { stdout } = await execa('xcrun', [
+      'altool',
+      '--notarize-app',
+      '--file',
+      file,
+      '--primary-bundle-id',
+      bundleId,
+      '--username',
+      username,
+      '--password',
+      password,
+      '--asc-provider',
+      provider,
+      '--output-format',
+      'json',
+    ]);
+    let requestUuid;
+    try {
+      requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
+    } catch (error) {
+      console.error(stdout);
+    }
+    return requestUuid;
+  }
 };
 
 const staple = async (file) => {
