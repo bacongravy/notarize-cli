@@ -24,6 +24,7 @@ class NotarizeCliCommand extends Command {
 
     if (!requestUuid) {
       console.error('Error: could not upload file for notarization');
+      this.exit(1);
     } else {
       let requestStatus = 'in progress';
 
@@ -63,6 +64,7 @@ class NotarizeCliCommand extends Command {
         : console.error('Error: could not get notarization info');
       if (requestStatus !== 'success') {
         console.error(`Error: could not notarize file`);
+        this.exit(1);
       }
     }
   }
