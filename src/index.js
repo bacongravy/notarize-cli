@@ -19,11 +19,15 @@ class NotarizeCliCommand extends Command {
       flags.username,
       flags.password,
     ).catch(() => undefined);
+
     console.log('done');
+
     if (!requestUuid) {
       console.error('Error: could not upload file for notarization');
     } else {
       let requestStatus = 'in progress';
+
+      console.log(`Request UUID is ${requestUuid}`);
 
       // Sometimes Apple receives the upload and issues a UUID, but is not ready to return request status right away
       // Allow up to 5 retries on error before giving up and calling this an actual failure
