@@ -24,6 +24,11 @@ class NotarizeCliCommand extends Command {
       console.error('Error: could not upload file for notarization');
     } else {
       let requestStatus = 'in progress';
+
+      // Sometimes Apple receives the upload and issues a UUID, but is not ready to return request status right away
+      // Allow up to 5 retries on error before giving up and calling this an actual failure
+      let retries = 0;
+
       while (requestStatus === 'in progress') {
         process.stdout.write('Waiting for notarization status... ');
         await sleep(10 * 1000);
@@ -32,7 +37,13 @@ class NotarizeCliCommand extends Command {
           flags.username,
           flags.password,
         ).catch(() => 'error');
+
         console.log(requestStatus);
+
+        if (requestStatus === 'error' && retries <= 5) {
+          retries += 1;
+          requestStatus = 'in progress';
+        }
       }
       if (requestStatus === 'success' && !flags['no-staple']) {
         staple(flags.file);
