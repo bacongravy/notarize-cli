@@ -29,6 +29,7 @@ const getRequestStatus = async (requestUuid, username, password) => {
 };
 
 const notarizeApp = async (file, bundleId, provider, username, password) => {
+  let failed;
   var xcrun_args = ['altool', '--notarize-app'];
   if (file !== undefined) {
     xcrun_args.push('--file', file);
@@ -46,14 +47,19 @@ const notarizeApp = async (file, bundleId, provider, username, password) => {
     xcrun_args.push('--password', password);
   }
   xcrun_args.push('--output-format', 'json');
-  const { stdout } = await execa('xcrun', xcrun_args);
-  let requestUuid;
+  const { stdout } = await execa('xcrun', xcrun_args).catch((e) => { failed = true; return e });
+  let requestUuid, error;
   try {
-    requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
+    if (failed) {
+      error = JSON.parse(stdout)['product-errors'][0].message
+    }
+    else {
+      requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
+    }
   } catch (error) {
     console.error(stdout);
   }
-  return requestUuid;
+  return { requestUuid, error };
 };
 
 const staple = async (file) => {
