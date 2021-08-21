@@ -27,13 +27,14 @@ USAGE
   $ notarize-cli
 
 OPTIONS
-  -h, --help             show CLI help
-  -v, --version          show CLI version
-  --bundle-id=bundle-id  (required) bundle id of the app to notarize
-  --file=file            (required) path to the file to notarize
-  --no-staple            disable automatic stapling
-  --password=password    (required) password to use for authentication
-  --username=username    (required) username to use for authentication
+  -h, --help                   show CLI help
+  -v, --version                show CLI version
+  --asc-provider=asc-provider  asc provider to use for app notarization
+  --bundle-id=bundle-id        (required) bundle id of the app to notarize
+  --file=file                  (required) path to the file to notarize
+  --no-staple                  disable automatic stapling
+  --password=password          (required) password to use for authentication
+  --username=username          (required) username to use for authentication
 ```
 
 ## Environment variables
