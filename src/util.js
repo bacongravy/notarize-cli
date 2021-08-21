@@ -31,21 +31,21 @@ const getRequestStatus = async (requestUuid, username, password) => {
 const notarizeApp = async (file, bundleId, provider, username, password) => {
   var xcrun_args = ['altool', '--notarize-app'];
   if (file !== undefined) {
-    xcrun_args.push('--file', file)  
+    xcrun_args.push('--file', file);
   }
   if (bundleId !== undefined) {
-    xcrun_args.push('--primary-bundle-id', bundleId)  
+    xcrun_args.push('--primary-bundle-id', bundleId);
   }
   if (provider !== undefined) {
-    xcrun_args.push('--asc-provider', provider)
+    xcrun_args.push('--asc-provider', provider);
   }
   if (username !== undefined) {
-    xcrun_args.push('--username', username)
+    xcrun_args.push('--username', username);
   }
   if (password !== undefined) {
-    xcrun_args.push('--password', password)
+    xcrun_args.push('--password', password);
   }
-  xcrun_args.push('--output-format', 'json')
+  xcrun_args.push('--output-format', 'json');
   const { stdout } = await execa('xcrun', xcrun_args);
   let requestUuid;
   try {
