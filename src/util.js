@@ -3,7 +3,7 @@ const execa = require('execa');
 const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getNotarizationInfo = async (requestUuid, username, password) => {
-  const { stdout } = await execa('xcrun', [
+  const { stdout, stderr } = await execa('xcrun', [
     'altool',
     '--notarization-info',
     requestUuid,
@@ -15,12 +15,41 @@ const getNotarizationInfo = async (requestUuid, username, password) => {
     'json',
   ]);
   let notarizationInfo;
+  let tryLegacy = false;
+
   try {
     notarizationInfo = JSON.parse(stdout)['notarization-info'];
   } catch (error) {
-    console.error(stdout);
+    tryLegacy = true;
+    console.error(`Could not parse as JSON. Will try legacy mode.`);
+  }
+
+  if (tryLegacy) {
+    try {
+      notarizationInfo = parseLegacyNotarizationInfo(stderr)
+    } catch (e) {
+      console.error(`Could not parse as legacy key/value pairs: ${e} stdout: ${stdout}. stderr: ${stderr}`);
+    }
   }
   return notarizationInfo;
+};
+
+const parseLegacyNotarizationInfo = (response) => {
+  let uuidMatches = response.match(/RequestUUID.\s(.*)\s*/)
+  let dateMatches = response.match(/Date.\s(.*)\s*/)
+  let statusMatches = response.match(/Status.\s(.*)\s/)
+  let logFileURLMatches = response.match(/LogFileURL.\s(.*)\s/)
+  let statusCodeMatches = response.match(/Status Code.\s(.*)\s/)
+  let statusMessageMatches = response.match(/Status Message.\s(.*)\s/)
+
+  return {
+    RequestUUID: uuidMatches ? uuidMatches[1] : '',
+    Date: dateMatches ? dateMatches[1] : '',
+    Status: statusMatches ? statusMatches[1] : '',
+    LogFileURL: logFileURLMatches ? logFileURLMatches[1] : '',
+    StatusCode: statusCodeMatches ? statusCodeMatches[1] : '',
+    StatusMessage: statusMessageMatches ? statusMessageMatches[1] : '',
+  }
 };
 
 const getRequestStatus = async (requestUuid, username, password) => {
@@ -47,18 +76,35 @@ const notarizeApp = async (file, bundleId, provider, username, password) => {
     xcrun_args.push('--password', password);
   }
   xcrun_args.push('--output-format', 'json');
-  const { stdout } = await execa('xcrun', xcrun_args).catch((e) => { failed = true; return e });
+  const { stdout, stderr } = await execa('xcrun', xcrun_args).catch((e) => { failed = true; return e });
   let requestUuid, error;
-  try {
-    if (failed) {
+  if (failed) {
+    try {
       error = JSON.parse(stdout)['product-errors'][0].message
+    } catch (e) {
+      console.error(`Error parsing product errors: ${e}. Stdout: ${stdout}. Stderr: ${stderr}`)
     }
-    else {
+  } else {
+    let parseLegacyUUID = false
+    try {
       requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
+    } catch (e) {
+      parseLegacyUUID = true
+      console.error(`Error parsing UUID from JSON. Will try legacy mode.`)
     }
-  } catch (error) {
-    console.error(stdout);
+
+    if (parseLegacyUUID === true) {
+      try {
+        // Older versions of MacOS don't support the json output, so parse the structured output
+        // RequestUUID = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        const pattern = /RequestUUID\s=\s(.*)/
+        requestUuid = stderr.match(pattern)[1]
+      } catch (e) {
+        console.error(`Error parsing UUID from structured data: ${e}. Stdout: ${stdout}. Stderr: ${stderr}`)
+      }
+    }
   }
+
   return { requestUuid, error };
 };
 
